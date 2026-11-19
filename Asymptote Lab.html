@@ -1,0 +1,1006 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Asymptote Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: graph-paper simulator pinned on the left, rules and problems scrolling on the right. */
+:root{
+  --paper:#EDF1F3; --panel:#FFFFFF; --sunk:#E3EAEE;
+  --ink:#12202A; --ink-soft:#506470; --rule:#C8D5DB;
+  --grid:#E1E9ED; --grid-major:#C3D1D8;
+  --accent:#1D5FD1; --accent-ink:#FFFFFF;
+  --va:#C4382F; --ha:#12805A; --slant:#A86200; --pt:#B8387A;
+  --display:'Bricolage Grotesque',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E161C; --panel:#151F27; --sunk:#1B2832;
+    --ink:#E4EDF2; --ink-soft:#9DB0BC; --rule:#2B3A46;
+    --grid:#202D37; --grid-major:#33444F;
+    --accent:#6FA6FF; --accent-ink:#0B1520;
+    --va:#FF7B72; --ha:#4FCB9A; --slant:#F0B34A; --pt:#F28DB8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E161C; --panel:#151F27; --sunk:#1B2832;
+  --ink:#E4EDF2; --ink-soft:#9DB0BC; --rule:#2B3A46;
+  --grid:#202D37; --grid-major:#33444F;
+  --accent:#6FA6FF; --accent-ink:#0B1520;
+  --va:#FF7B72; --ha:#4FCB9A; --slant:#F0B34A; --pt:#F28DB8;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:1440px;margin-inline:auto;padding-inline:max(16px,3vw);padding-block:22px 56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-0.01em}
+h1{font-size:clamp(28px,4vw,44px);font-weight:800;line-height:1.05}
+h2{font-size:clamp(22px,2.6vw,28px);font-weight:700;line-height:1.15}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.top{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.top p{color:var(--ink-soft);max-width:60ch}
+code,.m{font-family:var(--mono);font-size:.92em}
+code.m{background:var(--sunk);padding:1px 6px;border-radius:4px;white-space:nowrap}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:28px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+.sim{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100dvh - 24px);overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sim>*{flex:none}
+.sim-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.hint{font-size:12.5px;color:var(--ink-soft)}
+.seg{display:inline-flex;gap:2px;padding:3px;background:var(--sunk);border:1px solid var(--rule);border-radius:9px}
+.seg button{border:0;background:transparent;color:var(--ink-soft);font-weight:600;font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--rule)}
+
+.fx{display:flex;align-items:center;gap:10px;background:var(--sunk);border:1px solid var(--rule);border-radius:8px;padding:0 12px}
+.fx:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.fx span{font-family:var(--mono);color:var(--ink-soft);font-size:14px;white-space:nowrap}
+.fx input{flex:1;min-width:0;height:44px;border:0;background:transparent;color:var(--ink);font-family:var(--mono);font-size:15px;outline:none}
+.err{min-height:1.3em;font-size:12.5px;color:var(--va);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--ink-soft)}
+.btn{border:1px solid var(--rule);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px;padding:7px 12px;border-radius:7px;cursor:pointer}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.primary:hover{filter:brightness(1.08);background:var(--accent)}
+.btn.small{padding:4px 9px;font-size:12px}
+
+.frame{position:relative;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--panel)}
+#cv{display:block;width:100%;height:clamp(280px,46dvh,540px);touch-action:none;cursor:grab}
+#cv.add{cursor:crosshair}
+.zoom{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:30px;height:30px;padding:0;line-height:1;font-size:16px;font-weight:600}
+.readout{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);min-height:1.5em}
+.toggles{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px}
+.toggles label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.toggles input{accent-color:var(--accent)}
+
+.res{display:grid;grid-template-columns:minmax(0,8.6rem) minmax(0,1fr);gap:8px 12px;margin:0;font-size:14px}
+.res dt{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-weight:500}
+.res dd{margin:0;font-family:var(--mono);font-size:13.5px;overflow-wrap:anywhere}
+.res .why{display:block;font-family:var(--body);font-size:12px;color:var(--ink-soft)}
+.sw{width:18px;height:0;border-top:2px dashed currentColor;flex:none}
+.sw.solid{border-top-style:solid}
+.sw.dot{width:10px;height:10px;border:2px solid currentColor;border-radius:50%;flex:none}
+.c-va{color:var(--va)}.c-ha{color:var(--ha)}.c-sl{color:var(--slant)}.c-fx{color:var(--accent)}.c-pt{color:var(--pt)}
+.res dt.c-va,.res dt.c-ha,.res dt.c-sl,.res dt.c-fx,.res dt.c-pt{color:var(--ink-soft)}
+.res dt .sw,.res dt .dot{color:inherit}
+.res dt.c-va .sw{color:var(--va)}.res dt.c-ha .sw{color:var(--ha)}.res dt.c-sl .sw{color:var(--slant)}.res dt.c-fx .sw{color:var(--accent)}.res dt.c-pt .sw{color:var(--pt)}
+
+textarea{width:100%;min-height:104px;resize:vertical;background:var(--sunk);color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row input[type=text]{width:6.5rem;height:32px;background:var(--sunk);border:1px solid var(--rule);border-radius:6px;color:var(--ink);font-family:var(--mono);padding:0 8px}
+.big{font-family:var(--mono);font-size:17px;font-weight:500;color:var(--pt)}
+
+.content{display:flex;flex-direction:column;gap:44px;min-width:0}
+.section{display:flex;flex-direction:column;gap:16px}
+.lede{color:var(--ink-soft);max-width:62ch}
+.rule-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:20px 28px}
+.rule-grid>div{display:flex;flex-direction:column;gap:6px;border-top:2px solid var(--rule);padding-top:10px;min-width:0}
+.rule-grid .tag{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.ha-box{border:1px solid var(--rule);border-radius:10px;background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td .btn{margin-top:6px}
+.steps4{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:12px;counter-reset:s;padding:0;margin:0;list-style:none}
+.steps4 li{counter-increment:s;display:block;padding-top:8px;border-top:2px solid var(--accent)}
+.steps4 li::before{content:"Step " counter(s);display:block;margin-bottom:4px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.steps4 b{font-weight:600}
+
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.level{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+.level .dots{font-family:var(--mono);letter-spacing:2px;color:var(--accent)}
+.prob{display:grid;grid-template-columns:2.2rem minmax(0,1fr);gap:4px 6px;border-top:1px solid var(--rule);padding-block:14px}
+.prob .num{font-family:var(--mono);font-weight:500;color:var(--ink-soft);padding-top:2px}
+.stmt{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.stmt .fn{font-family:var(--mono);font-size:16px;overflow-wrap:anywhere;min-width:0}
+.ask{color:var(--ink-soft);margin-top:4px}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent);width:fit-content;padding:2px 0}
+summary:hover{text-decoration:underline}
+.ans{display:flex;flex-direction:column;gap:12px;margin-top:10px;padding:12px 14px;background:var(--panel);border:1px solid var(--rule);border-radius:8px}
+.ans ol{margin:0;padding-left:1.25rem;display:flex;flex-direction:column;gap:7px}
+.ans li{padding-left:2px}
+.ans li::marker{font-family:var(--mono);color:var(--ink-soft);font-size:.9em}
+.final{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:8px;margin:0}
+.final div{background:var(--sunk);border-radius:6px;padding:7px 10px;min-width:0}
+.final dt{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+.final dd{margin:2px 0 0;font-family:var(--mono);font-size:13.5px;overflow-wrap:anywhere}
+.foot{font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:14px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .sim{position:static;max-height:none;overflow:visible}
+  #cv{height:clamp(260px,52vw,420px)}
+}
+@media (prefers-reduced-motion:no-preference){
+  .btn,.seg button{transition:background .12s,filter .12s}
+}
+</style>
+<div class="wrap">
+  <header class="top">
+    <h1>Asymptote Lab</h1>
+    <p>Practice finding vertical, horizontal and slant asymptotes and holes of rational functions. Graph any function on the left, then check your work against the worked answers.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="sim panel" id="sim" aria-label="Graphing simulator">
+      <div class="sim-head">
+        <div class="seg" role="group" aria-label="Mode">
+          <button type="button" id="tabFn" aria-pressed="true">Function</button>
+          <button type="button" id="tabReg" aria-pressed="false">Regression line</button>
+        </div>
+        <span class="hint">Drag to pan. Scroll or pinch to zoom.</span>
+      </div>
+
+      <div id="modeFn">
+        <label class="fx" for="fx"><span>f(x) =</span><input id="fx" type="text" value="(x^2 - x - 6)/(x^2 - 2x - 3)" spellcheck="false" autocomplete="off" autocapitalize="off"></label>
+        <p class="err" id="fxErr" role="status"></p>
+        <div class="chips">
+          <span>Try:</span>
+          <button type="button" class="btn small try" data-expr="(x^2 - 4)/(x - 2)">Hole only</button>
+          <button type="button" class="btn small try" data-expr="(x^2 + 3x + 2)/(x - 1)">Slant</button>
+          <button type="button" class="btn small try" data-expr="(3x + 1)/(x^2 + 1)">y = 0</button>
+          <button type="button" class="btn small try" data-expr="(2x + 1)/(x - 4)">y = 2</button>
+        </div>
+      </div>
+
+      <div id="modeReg" hidden>
+        <label for="ptsText" class="hint">Points, one per line as x, y. You can also click the graph to add a point, or click a point to remove it.</label>
+        <textarea id="ptsText" spellcheck="false"></textarea>
+        <p class="err" id="ptsErr" role="status"></p>
+        <div class="row">
+          <button type="button" class="btn small" id="btnSample">Load sample</button>
+          <button type="button" class="btn small" id="btnClear">Clear points</button>
+        </div>
+      </div>
+
+      <div class="frame">
+        <canvas id="cv" tabindex="0" aria-label="Graph. Arrow keys pan, plus and minus zoom."></canvas>
+        <div class="zoom">
+          <button type="button" class="btn" id="zin" aria-label="Zoom in">+</button>
+          <button type="button" class="btn" id="zout" aria-label="Zoom out">&minus;</button>
+          <button type="button" class="btn" id="zreset" aria-label="Reset view">&#8634;</button>
+        </div>
+      </div>
+      <p class="readout" id="readout" aria-live="off">Move over the graph to read values.</p>
+
+      <div class="toggles" id="togFn">
+        <label><input type="checkbox" id="tAsym" checked> Asymptotes</label>
+        <label><input type="checkbox" id="tHole" checked> Holes</label>
+        <label><input type="checkbox" id="tInt"> Intercepts</label>
+      </div>
+      <div class="toggles" id="togReg" hidden>
+        <label><input type="checkbox" id="tLine" checked> Regression line</label>
+        <label><input type="checkbox" id="tRes"> Residuals</label>
+        <label><input type="checkbox" id="tShowFn"> Also show f(x)</label>
+      </div>
+
+      <dl class="res" id="res"></dl>
+
+      <div id="outReg" hidden>
+        <dl class="res" id="regRes"></dl>
+        <div class="row" style="margin-top:10px">
+          <label for="predX" class="hint">Predict y at x =</label>
+          <input type="text" id="predX" value="8" inputmode="decimal">
+          <span class="m" id="predY"></span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="section" id="rules">
+        <h2>Rules</h2>
+        <p class="lede">Write the function as a top over a bottom. Let <code class="m">n</code> be the degree of the top and <code class="m">m</code> the degree of the bottom.</p>
+
+        <ol class="steps4">
+          <li><b>Factor</b> the top and the bottom.</li>
+          <li><b>Cancel</b> common factors. Each one is a hole.</li>
+          <li><b>Set</b> what is left of the bottom to 0. Each solution is a vertical asymptote.</li>
+          <li><b>Compare</b> n and m for the horizontal or slant asymptote.</li>
+        </ol>
+
+        <div class="rule-grid">
+          <div>
+            <span class="tag">Hole</span>
+            <p>A factor that cancels from top and bottom. Set it to 0 to get x, then put that x into the simplified function to get y.</p>
+          </div>
+          <div>
+            <span class="tag">Vertical asymptote</span>
+            <p>A factor that stays in the bottom after cancelling. Set it to 0. The graph climbs or drops without bound beside this line.</p>
+          </div>
+          <div>
+            <span class="tag">Slant asymptote</span>
+            <p>Exists when <code class="m">n = m + 1</code>. Divide the top by the bottom. The quotient, without the remainder, is the line.</p>
+          </div>
+        </div>
+
+        <div class="ha-box" id="haRules">
+          <h3>Horizontal asymptote rules</h3>
+          <div class="tbl">
+            <table>
+              <thead><tr><th>Compare degrees</th><th>Horizontal asymptote</th><th>Example</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code class="m">n &lt; m</code></td>
+                  <td><code class="m">y = 0</code></td>
+                  <td><code class="m">(3x + 1)/(x² + 1)</code><br><button type="button" class="btn small try" data-expr="(3x + 1)/(x^2 + 1)">Graph example</button></td>
+                </tr>
+                <tr>
+                  <td><code class="m">n = m</code></td>
+                  <td><code class="m">y = </code>leading coefficient of top &divide; leading coefficient of bottom</td>
+                  <td><code class="m">3x²/(x² + 1)</code> gives <code class="m">y = 3</code><br><button type="button" class="btn small try" data-expr="3x^2/(x^2 + 1)">Graph example</button></td>
+                </tr>
+                <tr>
+                  <td><code class="m">n &gt; m</code></td>
+                  <td>None. If <code class="m">n = m + 1</code>, use a slant asymptote instead.</td>
+                  <td><code class="m">(x² + 3x + 2)/(x − 1)</code><br><button type="button" class="btn small try" data-expr="(x^2 + 3x + 2)/(x - 1)">Graph example</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Only the highest powers matter for this rule. Cancelling a common factor lowers n and m by the same amount, so the answer is the same before and after.</p>
+          <p>A graph can cross its horizontal asymptote in the middle. It only has to level off toward the far left and far right. The first example above crosses <code class="m">y = 0</code> at <code class="m">x = −1/3</code>.</p>
+        </div>
+      </section>
+
+      <section class="section" id="practice">
+        <div class="bar">
+          <h2>Practice problems</h2>
+          <div class="row">
+            <button type="button" class="btn small" id="openAll">Show all answers</button>
+            <button type="button" class="btn small" id="closeAll">Hide all answers</button>
+          </div>
+        </div>
+        <p class="lede">For each function, find all vertical, horizontal and slant asymptotes and any holes. Use Graph it to see the function in the simulator.</p>
+        <div id="problems"></div>
+      </section>
+
+      <p class="foot">Asymptote Lab. The simulator reads your typed function as a ratio of polynomials, cancels common factors, and reports holes and asymptotes the same way the answer sheet does.</p>
+    </main>
+  </div>
+</div>
+<script>
+/* ---------- Polynomial and rational-function engine ---------- */
+function ptrim(p){let n=p.length;while(n>1&&Math.abs(p[n-1])<1e-12)n--;return p.slice(0,n);}
+function pdeg(p){p=ptrim(p);return(p.length===1&&Math.abs(p[0])<1e-12)?-Infinity:p.length-1;}
+function padd(a,b){const n=Math.max(a.length,b.length),r=new Array(n).fill(0);for(let i=0;i<n;i++)r[i]=(a[i]||0)+(b[i]||0);return ptrim(r);}
+function pneg(a){return a.map(c=>-c);}
+function pmul(a,b){const r=new Array(a.length+b.length-1).fill(0);for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++)r[i+j]+=a[i]*b[j];return ptrim(r);}
+function peval(p,x){let r=0;for(let i=p.length-1;i>=0;i--)r=r*x+p[i];return r;}
+function pderiv(p){const r=p.slice(1).map((c,i)=>c*(i+1));return r.length?r:[0];}
+function monic(p){p=ptrim(p);const l=p[p.length-1];return p.map(c=>c/l);}
+function pdivmod(a,b){
+  a=ptrim(a.slice());b=ptrim(b);const db=b.length-1;
+  if(a.length<b.length)return{q:[0],r:a};
+  const q=new Array(a.length-db).fill(0),r=a.slice();
+  for(let k=a.length-1;k>=db;k--){
+    const c=r[k]/b[db];q[k-db]=c;
+    for(let j=0;j<=db;j++)r[k-db+j]-=c*b[j];
+    r[k]=0;
+  }
+  return{q:ptrim(q),r:ptrim(r.slice(0,Math.max(db,1)))};
+}
+function pgcd(a,b){
+  if(pdeg(a)<0)return pdeg(b)<0?[1]:monic(b);
+  if(pdeg(b)<0)return monic(a);
+  a=monic(a);b=monic(b);
+  for(let g=0;g<80;g++){
+    let r=pdivmod(a,b).r;
+    const s=Math.max(...a.map(Math.abs),...b.map(Math.abs));
+    r=ptrim(r.map(c=>Math.abs(c)<1e-8*s?0:c));
+    if(pdeg(r)<0)return monic(b);
+    a=b;b=monic(r);
+  }
+  return[1];
+}
+function sqfree(p){
+  p=ptrim(p);
+  if(p.length<=2)return p;
+  const g=pgcd(p,pderiv(p));
+  return pdeg(g)<=0?p:pdivmod(p,g).q;
+}
+function durandKerner(p){
+  p=monic(p);const n=p.length-1;
+  const R=1+Math.max(...p.slice(0,n).map(Math.abs));
+  const z=[];
+  for(let k=0;k<n;k++){const a=2*Math.PI*k/n+0.4;z.push([0.6*R*Math.cos(a),0.6*R*Math.sin(a)]);}
+  const mul=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]];
+  const sub=(a,b)=>[a[0]-b[0],a[1]-b[1]];
+  const div=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return[(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];};
+  for(let it=0;it<600;it++){
+    let delta=0;
+    for(let i=0;i<n;i++){
+      let v=[1,0];
+      for(let k=n-1;k>=0;k--){v=mul(v,z[i]);v[0]+=p[k];}
+      let den=[1,0];
+      for(let j=0;j<n;j++)if(j!==i)den=mul(den,sub(z[i],z[j]));
+      const dz=div(v,den);z[i]=sub(z[i],dz);
+      delta=Math.max(delta,Math.hypot(dz[0],dz[1]));
+    }
+    if(delta<1e-13)break;
+  }
+  return z;
+}
+function snapNum(x){
+  for(let d=1;d<=12;d++){const n=Math.round(x*d);if(Math.abs(x-n/d)<1e-7)return n/d;}
+  return x;
+}
+function realRoots(p){
+  p=sqfree(ptrim(p));
+  const d=p.length-1;
+  if(d<1)return[];
+  let roots=[];
+  if(d===1)roots=[-p[0]/p[1]];
+  else if(d===2){
+    const c=p[0],b=p[1],a=p[2],D=b*b-4*a*c;
+    if(D>=-1e-12){const s=Math.sqrt(Math.max(D,0));roots=[(-b+s)/(2*a),(-b-s)/(2*a)];}
+  }else{
+    roots=durandKerner(p).filter(z=>Math.abs(z[1])<1e-7*(1+Math.abs(z[0]))).map(z=>z[0]);
+  }
+  roots=roots.map(snapNum).sort((a,b)=>a-b);
+  return roots.filter((r,i)=>i===0||Math.abs(r-roots[i-1])>1e-7);
+}
+
+/* ---------- Formatting ---------- */
+function fmt(x){
+  if(!isFinite(x))return String(x);
+  const r=Math.round(x);
+  if(Math.abs(x-r)<1e-9)return(r<0?'−':'')+Math.abs(r);
+  for(let d=2;d<=24;d++){const n=Math.round(x*d);if(Math.abs(x-n/d)<1e-9)return(n<0?'−':'')+Math.abs(n)+'/'+d;}
+  return(x<0?'−':'')+Math.abs(+x.toFixed(4));
+}
+const SUP='⁰¹²³⁴⁵⁶⁷⁸⁹';
+const sup=i=>String(i).split('').map(c=>SUP[+c]).join('');
+function polyStr(p){
+  p=ptrim(p);let out='';
+  for(let i=p.length-1;i>=0;i--){
+    const c=p[i];if(Math.abs(c)<1e-12)continue;
+    const a=Math.abs(c);let t;
+    if(i===0)t=fmt(a);
+    else{const co=Math.abs(a-1)<1e-9?'':(fmt(a).includes('/')?'('+fmt(a)+')':fmt(a));t=co+'x'+(i>1?sup(i):'');}
+    out=out===''?(c<0?'−':'')+t:out+(c<0?' − ':' + ')+t;
+  }
+  return out||'0';
+}
+function lineStr(m,b){
+  if(Math.abs(m)<1e-9)return'y = '+fmt(b);
+  const f=fmt(Math.abs(m));
+  const mm=Math.abs(Math.abs(m)-1)<1e-9?'x':(f.includes('/')?'('+f+')x':f+'x');
+  let s='y = '+(m<0?'−':'')+mm;
+  if(Math.abs(b)>1e-9)s+=(b<0?' − ':' + ')+fmt(Math.abs(b));
+  return s;
+}
+
+/* ---------- Parser: text to a ratio of polynomials ---------- */
+function parseRational(src){
+  let s=src.replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/')
+           .replace(/²/g,'^2').replace(/³/g,'^3').replace(/\s+/g,'');
+  s=s.replace(/^(f|y)(\(x\))?=/i,'');
+  if(!s)throw new Error('Type a function of x.');
+  const toks=[];let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/[0-9.]/.test(c)){
+      const m=/^(\d+\.?\d*|\.\d+)/.exec(s.slice(i));
+      if(!m)throw new Error('Check the number near "'+s.slice(i,i+4)+'".');
+      toks.push({t:'n',v:parseFloat(m[1])});i+=m[1].length;
+    }else if(c==='x'||c==='X'){toks.push({t:'x'});i++;}
+    else if('+-*/^()'.includes(c)){toks.push({t:c});i++;}
+    else throw new Error('Unexpected "'+c+'". Use x, numbers, + − * / ^ and parentheses.');
+  }
+  const R=(n,d)=>({n:ptrim(n),d:ptrim(d||[1])});
+  const radd=(a,b)=>R(padd(pmul(a.n,b.d),pmul(b.n,a.d)),pmul(a.d,b.d));
+  const rneg=a=>R(pneg(a.n),a.d);
+  const rmul=(a,b)=>R(pmul(a.n,b.n),pmul(a.d,b.d));
+  const rinv=a=>{if(pdeg(a.n)<0)throw new Error('This divides by zero.');return R(a.d,a.n);};
+  const rdiv=(a,b)=>rmul(a,rinv(b));
+  const rpow=(a,k)=>{
+    if(k<0)return rinv(rpow(a,-k));
+    let r=R([1]);for(let j=0;j<k;j++)r=rmul(r,a);return r;
+  };
+  let p=0;const peek=()=>toks[p];
+  function expr(){
+    let v=term();
+    while(peek()&&(peek().t==='+'||peek().t==='-')){
+      const op=toks[p++].t,w=term();
+      v=op==='+'?radd(v,w):radd(v,rneg(w));
+    }
+    return v;
+  }
+  function term(){
+    let v=unary();
+    for(;;){
+      const k=peek();if(!k)break;
+      if(k.t==='*'){p++;v=rmul(v,unary());}
+      else if(k.t==='/'){p++;v=rdiv(v,unary());}
+      else if(k.t==='x'||k.t==='('||k.t==='n'){v=rmul(v,power());}
+      else break;
+    }
+    return v;
+  }
+  function unary(){
+    const k=peek();
+    if(k&&k.t==='-'){p++;return rneg(unary());}
+    if(k&&k.t==='+'){p++;return unary();}
+    return power();
+  }
+  function power(){
+    let b=atom();
+    if(peek()&&peek().t==='^'){
+      p++;const e=unary();
+      if(!(e.n.length===1&&e.d.length===1))throw new Error('Exponents must be whole numbers.');
+      const v=e.n[0]/e.d[0];
+      if(Math.abs(v-Math.round(v))>1e-9)throw new Error('Exponents must be whole numbers.');
+      if(Math.abs(v)>12)throw new Error('Exponent is too large (limit 12).');
+      b=rpow(b,Math.round(v));
+    }
+    return b;
+  }
+  function atom(){
+    const k=toks[p++];
+    if(!k)throw new Error('The expression ends too early.');
+    if(k.t==='n')return R([k.v]);
+    if(k.t==='x')return R([0,1]);
+    if(k.t==='('){
+      const v=expr();
+      if(!peek()||peek().t!==')')throw new Error('A parenthesis is not closed.');
+      p++;return v;
+    }
+    throw new Error('Unexpected "'+k.t+'".');
+  }
+  const f=expr();
+  if(p<toks.length)throw new Error('Unexpected "'+toks[p].t+'".');
+  if(pdeg(f.d)<0)throw new Error('This divides by zero.');
+  return f;
+}
+
+/* ---------- Analysis: holes, asymptotes, intercepts ---------- */
+function integerize(nr,dr){
+  if(dr[dr.length-1]<0){nr=pneg(nr);dr=pneg(dr);}
+  const all=nr.concat(dr).filter(c=>Math.abs(c)>1e-12);
+  for(let k=1;k<=120;k++){
+    if(all.every(c=>Math.abs(c*k-Math.round(c*k))<1e-7)){
+      nr=nr.map(c=>Math.round(c*k));dr=dr.map(c=>Math.round(c*k));
+      const gcd=(a,b)=>b?gcd(b,a%b):a;
+      const g=nr.concat(dr).map(Math.abs).filter(c=>c>0).reduce(gcd);
+      if(g>1){nr=nr.map(c=>c/g);dr=dr.map(c=>c/g);}
+      break;
+    }
+  }
+  return{nr:ptrim(nr),dr:ptrim(dr)};
+}
+function analyze(f){
+  const n=ptrim(f.n),d=ptrim(f.d);
+  if(pdeg(n)<0)return{zero:true,nr:[0],dr:[1],holes:[],va:[],ha:{kind:'zero'},slant:null,xint:[],yint:0};
+  const g=pgcd(n,d);
+  let nr=pdivmod(n,g).q,dr=pdivmod(d,g).q;
+  ({nr,dr}=integerize(nr,dr));
+  const vaX=realRoots(dr);
+  const holes=realRoots(g).filter(x=>!vaX.some(v=>Math.abs(v-x)<1e-6))
+    .map(x=>({x,y:peval(nr,x)/peval(dr,x)}));
+  const dn=pdeg(nr),dd=pdeg(dr);
+  let ha,slant=null;
+  if(dd===0){ha={kind:'poly'};}
+  else if(dn<dd)ha={kind:'zero',n:dn,m:dd,y:0};
+  else if(dn===dd)ha={kind:'ratio',n:dn,m:dd,y:nr[nr.length-1]/dr[dr.length-1]};
+  else{
+    ha={kind:'none',n:dn,m:dd};
+    if(dn===dd+1){const q=pdivmod(nr,dr).q;slant={m:q[1]||0,b:q[0]||0};}
+  }
+  const xint=realRoots(nr).filter(x=>!holes.some(h=>Math.abs(h.x-x)<1e-6));
+  const zeroIsHole=holes.some(h=>Math.abs(h.x)<1e-9);
+  const yint=(Math.abs(peval(dr,0))>1e-12&&!zeroIsHole)?peval(nr,0)/peval(dr,0):null;
+  return{nr,dr,holes,va:vaX,ha,slant,xint,yint,dn,dd};
+}
+
+/* ---------- Regression ---------- */
+function regress(pts){
+  const n=pts.length;
+  if(n<2)return null;
+  const mx=pts.reduce((s,p)=>s+p.x,0)/n,my=pts.reduce((s,p)=>s+p.y,0)/n;
+  let sxx=0,sxy=0,syy=0;
+  for(const p of pts){sxx+=(p.x-mx)**2;sxy+=(p.x-mx)*(p.y-my);syy+=(p.y-my)**2;}
+  if(sxx<1e-12)return null;
+  const m=sxy/sxx,b=my-m*mx;
+  const r=syy<1e-12?1:sxy/Math.sqrt(sxx*syy);
+  return{m,b,r,r2:r*r,n,mx,my};
+}
+/* ---------- Graphing simulator ---------- */
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const view={cx:0,cy:0,s:30};
+let W=0,H=0,dpr=1;
+let model=null;          // {A, fn}
+let mode='fn';
+let points=[];
+let hover=null;
+const sx=x=>(x-view.cx)*view.s+W/2;
+const sy=y=>H/2-(y-view.cy)*view.s;
+const wx=px=>view.cx+(px-W/2)/view.s;
+const wy=py=>view.cy-(py-H/2)/view.s;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+function resetView(){view.cx=0;view.cy=0;view.s=Math.max(8,(W||600)/20);draw();}
+function resize(){
+  const r=cv.getBoundingClientRect();
+  const first=!W;
+  dpr=window.devicePixelRatio||1;W=r.width;H=r.height;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  if(first)view.s=Math.max(8,W/20);
+  draw();
+}
+new ResizeObserver(resize).observe(cv);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+function niceStep(minWorld){
+  const p=Math.pow(10,Math.floor(Math.log10(minWorld))),m=minWorld/p;
+  const base=m<=1?1:m<=2?2:m<=5?5:10;
+  return{step:base*p,mant:base===10?1:base};
+}
+const tick=v=>{const t=parseFloat(v.toFixed(8)).toString();return t.replace('-','−');};
+
+function halo(text,x,y,color,bg,align){
+  ctx.textAlign=align||'left';ctx.lineWidth=4;ctx.strokeStyle=bg;ctx.lineJoin='round';
+  ctx.strokeText(text,x,y);ctx.fillStyle=color;ctx.fillText(text,x,y);
+}
+
+function draw(){
+  if(!W)return;
+  const C={panel:css('--panel'),grid:css('--grid'),major:css('--grid-major'),ink:css('--ink'),soft:css('--ink-soft'),
+    curve:css('--accent'),va:css('--va'),ha:css('--ha'),sl:css('--slant'),pt:css('--pt')};
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=C.panel;ctx.fillRect(0,0,W,H);
+  const x0=wx(0),x1=wx(W),y0=wy(H),y1=wy(0);
+  const {step,mant}=niceStep(56/view.s);
+  const ms=step/({1:5,2:4,5:5}[mant]);
+
+  ctx.lineWidth=1;ctx.setLineDash([]);
+  ctx.strokeStyle=C.grid;ctx.beginPath();
+  for(let k=Math.ceil(x0/ms);k*ms<=x1;k++){const px=Math.round(sx(k*ms))+.5;ctx.moveTo(px,0);ctx.lineTo(px,H);}
+  for(let k=Math.ceil(y0/ms);k*ms<=y1;k++){const py=Math.round(sy(k*ms))+.5;ctx.moveTo(0,py);ctx.lineTo(W,py);}
+  ctx.stroke();
+  ctx.strokeStyle=C.major;ctx.beginPath();
+  for(let k=Math.ceil(x0/step);k*step<=x1;k++){const px=Math.round(sx(k*step))+.5;ctx.moveTo(px,0);ctx.lineTo(px,H);}
+  for(let k=Math.ceil(y0/step);k*step<=y1;k++){const py=Math.round(sy(k*step))+.5;ctx.moveTo(0,py);ctx.lineTo(W,py);}
+  ctx.stroke();
+
+  ctx.strokeStyle=C.soft;ctx.lineWidth=1.5;ctx.beginPath();
+  if(x0<=0&&x1>=0){ctx.moveTo(Math.round(sx(0))+.5,0);ctx.lineTo(Math.round(sx(0))+.5,H);}
+  if(y0<=0&&y1>=0){ctx.moveTo(0,Math.round(sy(0))+.5);ctx.lineTo(W,Math.round(sy(0))+.5);}
+  ctx.stroke();
+
+  ctx.font='11px "IBM Plex Mono",ui-monospace,monospace';
+  const axY=clamp(sy(0)+14,12,H-6),axX=clamp(sx(0)-6,34,W-4);
+  for(let k=Math.ceil(x0/step);k*step<=x1;k++){if(k===0)continue;{const px=sx(k*step);if(px>16&&px<W-16)halo(tick(k*step),px,axY,C.soft,C.panel,'center');}}
+  for(let k=Math.ceil(y0/step);k*step<=y1;k++){if(k===0)continue;halo(tick(k*step),axX,sy(k*step)+4,C.soft,C.panel,'right');}
+  if(x0<=0&&x1>=0&&y0<=0&&y1>=0)halo('0',sx(0)-6,sy(0)+14,C.soft,C.panel,'right');
+
+  const A=model&&model.A;
+  const showFn=mode==='fn'||$('tShowFn').checked;
+  ctx.font='600 11.5px "IBM Plex Mono",ui-monospace,monospace';
+
+  if(A&&showFn&&$('tAsym').checked){
+    ctx.lineWidth=1.6;ctx.setLineDash([7,5]);
+    ctx.strokeStyle=C.va;
+    for(const v of A.va){const px=sx(v);ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();}
+    if(A.ha.kind==='zero'||A.ha.kind==='ratio'){
+      ctx.strokeStyle=C.ha;const py=sy(A.ha.y);ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();
+    }
+    if(A.slant){
+      ctx.strokeStyle=C.sl;ctx.beginPath();
+      ctx.moveTo(0,sy(A.slant.m*x0+A.slant.b));ctx.lineTo(W,sy(A.slant.m*x1+A.slant.b));ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    for(const v of A.va){const px=sx(v);if(px>0&&px<W){const left=px>W-70;halo('x = '+fmt(v),left?px-5:px+5,16,C.va,C.panel,left?'right':'left');}}
+    if(A.ha.kind==='zero'||A.ha.kind==='ratio'){const py=sy(A.ha.y);if(py>10&&py<H)halo('y = '+fmt(A.ha.y),W-6,py-6,C.ha,C.panel,'right');}
+    if(A.slant){
+      const xl=x0+(x1-x0)*0.2,yl=A.slant.m*xl+A.slant.b;
+      if(sy(yl)>14&&sy(yl)<H-14)halo(lineStr(A.slant.m,A.slant.b),sx(xl),sy(yl)-9,C.sl,C.panel,'left');
+    }
+  }
+
+  if(A&&showFn){
+    ctx.lineWidth=2.4;ctx.strokeStyle=C.curve;ctx.lineJoin='round';ctx.beginPath();
+    let pen=false,prev=null;
+    for(let px=0;px<=W+1;px+=1.5){
+      const x=wx(px),y=model.fn(x),py=sy(y);
+      if(!isFinite(y)||Math.abs(py)>1e5){pen=false;prev=null;continue;}
+      if(prev!==null&&A.va.some(v=>v>prev&&v<=x))pen=false;
+      if(!pen){ctx.moveTo(px,py);pen=true;}else ctx.lineTo(px,py);
+      prev=x;
+    }
+    ctx.stroke();
+
+    if($('tHole').checked){
+      ctx.font='600 11.5px "IBM Plex Mono",ui-monospace,monospace';
+      for(const h of A.holes){
+        const px=sx(h.x),py=sy(h.y);
+        ctx.beginPath();ctx.arc(px,py,5,0,7);ctx.fillStyle=C.panel;ctx.fill();
+        ctx.lineWidth=2.2;ctx.strokeStyle=C.curve;ctx.stroke();
+        halo('('+fmt(h.x)+', '+fmt(h.y)+')',px+9,py-9,C.ink,C.panel,'left');
+      }
+    }
+    if($('tInt').checked){
+      const dot=(x,y)=>{ctx.beginPath();ctx.arc(sx(x),sy(y),4,0,7);ctx.fillStyle=C.ink;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=C.panel;ctx.stroke();};
+      A.xint.forEach(x=>dot(x,0));if(A.yint!==null)dot(0,A.yint);
+    }
+    if(hover&&mode==='fn'){
+      const y=model.fn(hover.x);
+      if(isFinite(y)){ctx.beginPath();ctx.arc(sx(hover.x),sy(y),4,0,7);ctx.fillStyle=C.curve;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=C.panel;ctx.stroke();}
+    }
+  }
+
+  // regression layer
+  const fit=regress(points);
+  if(mode==='reg'){
+    if(fit&&$('tRes').checked){
+      ctx.lineWidth=1.2;ctx.strokeStyle=C.pt;ctx.globalAlpha=.55;ctx.beginPath();
+      for(const p of points){ctx.moveTo(sx(p.x),sy(p.y));ctx.lineTo(sx(p.x),sy(fit.m*p.x+fit.b));}
+      ctx.stroke();ctx.globalAlpha=1;
+    }
+    if(fit&&$('tLine').checked){
+      ctx.lineWidth=2.6;ctx.strokeStyle=C.pt;ctx.beginPath();
+      ctx.moveTo(0,sy(fit.m*x0+fit.b));ctx.lineTo(W,sy(fit.m*x1+fit.b));ctx.stroke();
+    }
+    for(const p of points){
+      ctx.beginPath();ctx.arc(sx(p.x),sy(p.y),5,0,7);ctx.fillStyle=C.pt;ctx.fill();
+      ctx.lineWidth=2;ctx.strokeStyle=C.panel;ctx.stroke();
+    }
+  }
+}
+
+/* ---------- Function input and analysis panel ---------- */
+function rows(list){
+  return list.map(r=>`<dt class="${r.c||''}">${r.sw||''}${r.k}</dt><dd>${r.v}${r.why?`<span class="why">${r.why}</span>`:''}</dd>`).join('');
+}
+const dash='<span class="sw"></span>',solid='<span class="sw solid"></span>',dotsw='<span class="sw dot"></span>';
+function showAnalysis(A){
+  const list=[];
+  list.push({k:'Simplified',c:'c-fx',sw:solid,v:A.zero?'0':(A.dr.length===1&&Math.abs(A.dr[0]-1)<1e-9?polyStr(A.nr):'('+polyStr(A.nr)+') / ('+polyStr(A.dr)+')')});
+  list.push({k:'Holes',c:'c-fx',sw:dotsw,v:A.holes.length?A.holes.map(h=>'('+fmt(h.x)+', '+fmt(h.y)+')').join('<br>'):'none',why:A.holes.length?'Factors that cancel':''});
+  list.push({k:'Vertical',c:'c-va',sw:dash,v:A.va.length?A.va.map(v=>'x = '+fmt(v)).join('<br>'):'none',why:A.va.length?'Zeros of what is left of the bottom':'Nothing left in the bottom to set to 0'});
+  let ha='none',why='';
+  if(A.ha.kind==='zero'){ha='y = '+(A.ha.y===undefined?'0':fmt(A.ha.y));why=A.ha.n===undefined?'':`n &lt; m (${A.ha.n} &lt; ${A.ha.m})`;}
+  else if(A.ha.kind==='ratio'){ha='y = '+fmt(A.ha.y);why=`n = m (${A.ha.n} and ${A.ha.m}): ratio of leading coefficients`;}
+  else if(A.ha.kind==='none'){why=`n &gt; m (${A.ha.n} &gt; ${A.ha.m})`;}
+  else if(A.ha.kind==='poly'){why='The bottom is a constant, so this is a polynomial';}
+  list.push({k:'Horizontal',c:'c-ha',sw:dash,v:ha,why});
+  list.push({k:'Slant',c:'c-sl',sw:dash,v:A.slant?lineStr(A.slant.m,A.slant.b):'none',why:A.slant?'n = m + 1: quotient of the division':''});
+  list.push({k:'x-intercepts',v:A.xint.length?A.xint.map(x=>'('+fmt(x)+', 0)').join(', '):'none'});
+  list.push({k:'y-intercept',v:A.yint===null?'none':'(0, '+fmt(A.yint)+')'});
+  $('res').innerHTML=rows(list);
+}
+function applyExpr(src){
+  const err=$('fxErr');
+  try{
+    const A=analyze(parseRational(src));
+    const nr=A.nr,dr=A.dr;
+    model={A,fn:x=>peval(nr,x)/peval(dr,x)};
+    err.textContent='';
+    showAnalysis(A);
+  }catch(e){err.textContent=e.message;}
+  draw();
+}
+function loadExpr(src,scroll){
+  $('fx').value=src;
+  if(mode!=='fn')setMode('fn');
+  applyExpr(src);resetView();
+  if(scroll&&window.matchMedia('(max-width:900px)').matches)$('sim').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('fx').addEventListener('input',e=>applyExpr(e.target.value));
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.try');if(b)loadExpr(b.dataset.expr,true);
+});
+
+/* ---------- Regression panel ---------- */
+const SAMPLE=[[1,2.1],[2,3.9],[3,6.2],[4,7.8],[5,10.1],[6,12.2],[7,13.8]];
+const d3=v=>(+v.toFixed(3)).toString().replace('-','−');
+function syncText(){$('ptsText').value=points.map(p=>d3(p.x).replace('−','-')+', '+d3(p.y).replace('−','-')).join('\n');}
+function parsePoints(){
+  const out=[];let bad=0;
+  for(const line of $('ptsText').value.split(/\n|;/)){
+    const t=line.trim();if(!t)continue;
+    const m=t.replace(/−/g,'-').split(/[\s,]+/).map(Number);
+    if(m.length===2&&m.every(isFinite))out.push({x:m[0],y:m[1]});else bad++;
+  }
+  $('ptsErr').textContent=bad?bad+(bad===1?' line is':' lines are')+' not in the form x, y.':'';
+  points=out;updateReg();
+}
+function updateReg(){
+  const f=regress(points);
+  if(!f){
+    $('regRes').innerHTML=rows([{k:'Line',c:'c-pt',sw:solid,v:'Add at least two points with different x values.'},{k:'Points',v:String(points.length)}]);
+    $('predY').textContent='';
+  }else{
+    $('regRes').innerHTML=rows([
+      {k:'Line',c:'c-pt',sw:solid,v:`<span class="big">y = ${d3(f.m)}x ${f.b<0?'−':'+'} ${d3(Math.abs(f.b))}</span>`},
+      {k:'r',v:d3(f.r),why:Math.abs(f.r)>.9?'Strong linear relationship':Math.abs(f.r)>.6?'Moderate linear relationship':'Weak linear relationship'},
+      {k:'r²',v:d3(f.r2),why:Math.round(f.r2*100)+'% of the variation in y is explained by x'},
+      {k:'Points',v:String(f.n)},
+      {k:'Mean',v:'('+d3(f.mx)+', '+d3(f.my)+')',why:'The line always passes through this point'}
+    ]);
+    const x=parseFloat($('predX').value.replace('−','-'));
+    $('predY').textContent=isFinite(x)?'y = '+d3(f.m*x+f.b):'';
+  }
+  draw();
+}
+$('ptsText').addEventListener('input',parsePoints);
+$('predX').addEventListener('input',updateReg);
+['tLine','tRes','tShowFn','tAsym','tHole','tInt'].forEach(id=>$(id).addEventListener('change',draw));
+$('btnSample').addEventListener('click',()=>{points=SAMPLE.map(([x,y])=>({x,y}));syncText();$('ptsErr').textContent='';updateReg();});
+$('btnClear').addEventListener('click',()=>{points=[];syncText();updateReg();});
+
+function setMode(m){
+  mode=m;
+  const reg=m==='reg';
+  $('tabFn').setAttribute('aria-pressed',String(!reg));$('tabReg').setAttribute('aria-pressed',String(reg));
+  $('modeFn').hidden=reg;$('modeReg').hidden=!reg;
+  $('togFn').hidden=reg;$('togReg').hidden=!reg;
+  $('res').hidden=reg;$('outReg').hidden=!reg;
+  cv.classList.toggle('add',reg);
+  $('readout').textContent=reg?'Click the graph to add a point. Click a point to remove it.':'Move over the graph to read values.';
+  if(reg){
+    if(!points.length){points=SAMPLE.map(([x,y])=>({x,y}));syncText();}
+    view.cx=4;view.cy=7;view.s=Math.max(10,Math.min(W/12,H/18));
+    updateReg();
+  }else resetView();
+}
+$('tabFn').addEventListener('click',()=>setMode('fn'));
+$('tabReg').addEventListener('click',()=>setMode('reg'));
+
+/* ---------- Pan, zoom, click, trace ---------- */
+const ptrs=new Map();
+let drag=null,pinch=null;
+function zoomAt(px,py,k){
+  const ax=wx(px),ay=wy(py);
+  view.s=clamp(view.s*k,2,3000);
+  view.cx=ax-(px-W/2)/view.s;view.cy=ay+(py-H/2)/view.s;draw();
+}
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);
+  const r=cv.getBoundingClientRect();
+  ptrs.set(e.pointerId,{x:e.clientX-r.left,y:e.clientY-r.top});
+  if(ptrs.size===1){drag={x:e.clientX,y:e.clientY,cx:view.cx,cy:view.cy,moved:false};}
+  else if(ptrs.size===2){
+    const [a,b]=[...ptrs.values()];
+    pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:view.s,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};
+    pinch.ax=wx(pinch.mx);pinch.ay=wy(pinch.my);drag=null;
+  }
+});
+cv.addEventListener('pointermove',e=>{
+  const r=cv.getBoundingClientRect();
+  const px=e.clientX-r.left,py=e.clientY-r.top;
+  if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:px,y:py});
+  if(ptrs.size===2&&pinch){
+    const [a,b]=[...ptrs.values()];
+    const d=Math.hypot(a.x-b.x,a.y-b.y);
+    view.s=clamp(pinch.s*d/pinch.d,2,3000);
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    view.cx=pinch.ax-(mx-W/2)/view.s;view.cy=pinch.ay+(my-H/2)/view.s;draw();return;
+  }
+  if(drag&&ptrs.size===1){
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(Math.hypot(dx,dy)>4)drag.moved=true;
+    if(drag.moved){view.cx=drag.cx-dx/view.s;view.cy=drag.cy+dy/view.s;draw();}
+  }
+  if(!drag||!drag.moved){
+    const x=wx(px);hover={x};
+    if(mode==='fn'&&model){
+      const y=model.fn(x),A=model.A;
+      const near=A.va.some(v=>Math.abs(v-x)<2/view.s);
+      const hole=A.holes.find(h=>Math.abs(h.x-x)<2/view.s);
+      $('readout').textContent='x = '+tick(+x.toFixed(3))+'   '+(near?'f(x) undefined (vertical asymptote)':hole?'f(x) undefined (hole, y would be '+fmt(hole.y)+')':'f(x) = '+(isFinite(y)?tick(+y.toFixed(3)):'undefined'));
+    }else if(mode==='reg'){
+      $('readout').textContent='x = '+tick(+x.toFixed(2))+'   y = '+tick(+wy(py).toFixed(2));
+    }
+    draw();
+  }
+});
+function endPtr(e){
+  const r=cv.getBoundingClientRect();
+  const was=drag;
+  ptrs.delete(e.pointerId);
+  if(ptrs.size<2)pinch=null;
+  if(was&&!was.moved&&ptrs.size===0&&mode==='reg'&&e.type==='pointerup'){
+    const px=e.clientX-r.left,py=e.clientY-r.top;
+    const i=points.findIndex(p=>Math.hypot(sx(p.x)-px,sy(p.y)-py)<11);
+    if(i>=0)points.splice(i,1);
+    else{
+      const {step,mant}=niceStep(56/view.s),ms=step/({1:5,2:4,5:5}[mant]);
+      points.push({x:+(Math.round(wx(px)/ms)*ms).toFixed(6),y:+(Math.round(wy(py)/ms)*ms).toFixed(6)});
+    }
+    syncText();updateReg();
+  }
+  if(ptrs.size===0)drag=null;
+}
+cv.addEventListener('pointerup',endPtr);
+cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('pointerleave',()=>{hover=null;draw();});
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect();
+  zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*0.0016));
+},{passive:false});
+cv.addEventListener('keydown',e=>{
+  const k=e.key,pan=40/view.s;
+  if(k==='ArrowLeft')view.cx-=pan;else if(k==='ArrowRight')view.cx+=pan;
+  else if(k==='ArrowUp')view.cy+=pan;else if(k==='ArrowDown')view.cy-=pan;
+  else if(k==='+'||k==='=')zoomAt(W/2,H/2,1.25);else if(k==='-')zoomAt(W/2,H/2,.8);
+  else return;
+  e.preventDefault();draw();
+});
+$('zin').addEventListener('click',()=>zoomAt(W/2,H/2,1.3));
+$('zout').addEventListener('click',()=>zoomAt(W/2,H/2,1/1.3));
+$('zreset').addEventListener('click',()=>{if(mode==='reg')setMode('reg');else resetView();});
+/* ---------- Problems and worked answers ---------- */
+const c=s=>`<code class="m">${s}</code>`;
+const LEVELS=[
+  {n:1,name:'Easy',dots:'●○○'},
+  {n:2,name:'Medium',dots:'●●○'},
+  {n:3,name:'Hard',dots:'●●●'}
+];
+const PROBLEMS=[
+ {id:1,lv:1,text:'f(x) = 1 / (x − 3)',expr:'1/(x-3)',
+  steps:[
+   `<b>Factor and cancel.</b> Nothing factors or cancels, so there are no holes.`,
+   `<b>Vertical asymptote.</b> Set the bottom to 0: ${c('x − 3 = 0')}, so ${c('x = 3')}.`,
+   `<b>Horizontal asymptote.</b> The top has degree 0 and the bottom has degree 1, so ${c('n < m')} and ${c('y = 0')}.`,
+   `<b>Slant asymptote.</b> None, because ${c('n')} is not ${c('m + 1')}.`],
+  fin:{Holes:'none',Vertical:'x = 3',Horizontal:'y = 0',Slant:'none'}},
+ {id:2,lv:1,text:'f(x) = (2x + 1) / (x − 4)',expr:'(2x+1)/(x-4)',
+  steps:[
+   `<b>Holes.</b> There are no common factors, so none.`,
+   `<b>Vertical asymptote.</b> ${c('x − 4 = 0')} gives ${c('x = 4')}.`,
+   `<b>Horizontal asymptote.</b> Both degrees are 1, so ${c('n = m')}. Divide the leading coefficients: ${c('2/1')}, so ${c('y = 2')}.`,
+   `<b>Slant asymptote.</b> None.`],
+  fin:{Holes:'none',Vertical:'x = 4',Horizontal:'y = 2',Slant:'none'}},
+ {id:3,lv:1,text:'f(x) = 3x² / (x² + 1)',expr:'3x^2/(x^2+1)',
+  steps:[
+   `<b>Holes.</b> None.`,
+   `<b>Vertical asymptote.</b> ${c('x² + 1 = 0')} has no real solutions, so there is no vertical asymptote.`,
+   `<b>Horizontal asymptote.</b> Both degrees are 2, so ${c('n = m')}. The leading coefficients give ${c('3/1')}, so ${c('y = 3')}.`,
+   `<b>Slant asymptote.</b> None.`],
+  fin:{Holes:'none',Vertical:'none',Horizontal:'y = 3',Slant:'none'}},
+ {id:4,lv:1,text:'f(x) = (x + 5) / (x² − 9)',expr:'(x+5)/(x^2-9)',
+  steps:[
+   `<b>Factor.</b> The bottom is ${c('(x − 3)(x + 3)')}. Neither factor cancels with ${c('x + 5')}, so there are no holes.`,
+   `<b>Vertical asymptotes.</b> ${c('x = 3')} and ${c('x = −3')}.`,
+   `<b>Horizontal asymptote.</b> The top has degree 1 and the bottom has degree 2, so ${c('n < m')} and ${c('y = 0')}.`,
+   `<b>Slant asymptote.</b> None.`],
+  fin:{Holes:'none',Vertical:'x = 3, x = −3',Horizontal:'y = 0',Slant:'none'}},
+ {id:5,lv:2,text:'f(x) = (4x² − 1) / (2x² + 5x − 3)',expr:'(4x^2-1)/(2x^2+5x-3)',
+  steps:[
+   `<b>Factor the top</b> (difference of squares): ${c('(2x − 1)(2x + 1)')}.`,
+   `<b>Factor the bottom:</b> ${c('(2x − 1)(x + 3)')}. Check: ${c('2x² + 6x − x − 3 = 2x² + 5x − 3')}.`,
+   `<b>Cancel</b> the common factor ${c('(2x − 1)')}. The simplified function is ${c('(2x + 1)/(x + 3)')}.`,
+   `<b>Hole.</b> Set ${c('2x − 1 = 0')} to get ${c('x = 1/2')}. Put it into the simplified function: ${c('(2·½ + 1)/(½ + 3) = 2/3.5 = 4/7')}. The hole is at ${c('(1/2, 4/7)')}.`,
+   `<b>Vertical asymptote.</b> What remains in the bottom is ${c('x + 3')}, so ${c('x = −3')}.`,
+   `<b>Horizontal asymptote.</b> The original degrees are both 2, so ${c('n = m')}. The leading coefficients give ${c('4/2')}, so ${c('y = 2')}.`],
+  fin:{Holes:'(1/2, 4/7)',Vertical:'x = −3',Horizontal:'y = 2',Slant:'none'}},
+ {id:6,lv:2,text:'f(x) = (x² − 4) / (x − 2)',expr:'(x^2-4)/(x-2)',
+  steps:[
+   `<b>Factor the top:</b> ${c('(x − 2)(x + 2)')}.`,
+   `<b>Cancel</b> ${c('(x − 2)')}. Now ${c('f(x) = x + 2')} for ${c('x ≠ 2')}.`,
+   `<b>Hole.</b> ${c('x = 2')}. Put it into ${c('x + 2')} to get ${c('y = 4')}. The hole is at ${c('(2, 4)')}.`,
+   `<b>Vertical asymptote.</b> None, because the bottom factor cancelled completely.`,
+   `<b>Horizontal and slant.</b> None. The simplified function is a line, and the hole is its only break.`,
+   `<i>A rational function can have a hole and nothing else.</i>`],
+  fin:{Holes:'(2, 4)',Vertical:'none',Horizontal:'none',Slant:'none'}},
+ {id:7,lv:2,text:'f(x) = (x² + 3x + 2) / (x − 1)',expr:'(x^2+3x+2)/(x-1)',
+  steps:[
+   `<b>Factor the top:</b> ${c('(x + 1)(x + 2)')}. Nothing cancels with ${c('(x − 1)')}, so there are no holes.`,
+   `<b>Vertical asymptote.</b> ${c('x − 1 = 0')} gives ${c('x = 1')}.`,
+   `<b>Horizontal asymptote.</b> The top has degree 2 and the bottom has degree 1, so ${c('n > m')} and there is none.`,
+   `<b>Slant asymptote.</b> ${c('n = m + 1')}, so divide. ${c('x² ÷ x = x')}; multiply back ${c('x(x − 1) = x² − x')}; subtract to get ${c('4x + 2')}.`,
+   `Next, ${c('4x ÷ x = 4')}; multiply back ${c('4(x − 1) = 4x − 4')}; subtract to get a remainder of ${c('6')}.`,
+   `The quotient is ${c('x + 4')}, so the slant asymptote is ${c('y = x + 4')}. The remainder is ignored.`],
+  fin:{Holes:'none',Vertical:'x = 1',Horizontal:'none',Slant:'y = x + 4'}},
+ {id:8,lv:3,text:'f(x) = (x² − x − 6) / (x² − 2x − 3)',ask:'Also find the x- and y-intercepts.',expr:'(x^2-x-6)/(x^2-2x-3)',
+  steps:[
+   `<b>Factor the top:</b> ${c('(x − 3)(x + 2)')}.`,
+   `<b>Factor the bottom:</b> ${c('(x − 3)(x + 1)')}.`,
+   `<b>Cancel</b> ${c('(x − 3)')}. The simplified function is ${c('(x + 2)/(x + 1)')}.`,
+   `<b>Hole.</b> ${c('x = 3')}. Put it in: ${c('(3 + 2)/(3 + 1) = 5/4')}. The hole is at ${c('(3, 5/4)')}.`,
+   `<b>Vertical asymptote.</b> ${c('x + 1 = 0')} gives ${c('x = −1')}.`,
+   `<b>Horizontal asymptote.</b> The degrees are equal and the leading coefficients are ${c('1/1')}, so ${c('y = 1')}.`,
+   `<b>x-intercept.</b> Set the simplified top to 0: ${c('x = −2')}, so ${c('(−2, 0)')}.`,
+   `<b>y-intercept.</b> ${c('f(0) = 2/1 = 2')}, so ${c('(0, 2)')}. Check with the original: ${c('−6/−3 = 2')}.`],
+  fin:{Holes:'(3, 5/4)',Vertical:'x = −1',Horizontal:'y = 1',Slant:'none','x-intercept':'(−2, 0)','y-intercept':'(0, 2)'}},
+ {id:9,lv:3,text:'f(x) = (x³ + 2x² − 5x − 6) / (x² + 2x − 8)',expr:'(x^3+2x^2-5x-6)/(x^2+2x-8)',
+  steps:[
+   `<b>Factor the bottom:</b> ${c('(x − 2)(x + 4)')}.`,
+   `<b>Factor the top.</b> Test ${c('x = 2')}: ${c('8 + 8 − 10 − 6 = 0')}, so ${c('(x − 2)')} is a factor. Dividing leaves ${c('x² + 4x + 3 = (x + 1)(x + 3)')}. The top is ${c('(x − 2)(x + 1)(x + 3)')}.`,
+   `<b>Cancel</b> ${c('(x − 2)')}. The simplified function is ${c('(x² + 4x + 3)/(x + 4)')}.`,
+   `<b>Hole.</b> ${c('x = 2')}. Put it in: ${c('(4 + 8 + 3)/(2 + 4) = 15/6 = 5/2')}. The hole is at ${c('(2, 5/2)')}.`,
+   `<b>Vertical asymptote.</b> ${c('x + 4 = 0')} gives ${c('x = −4')}.`,
+   `<b>Horizontal asymptote.</b> The top has degree 3 and the bottom has degree 2, so ${c('n > m')} and there is none.`,
+   `<b>Slant asymptote.</b> Divide ${c('x² + 4x + 3')} by ${c('x + 4')}. ${c('x² ÷ x = x')}; multiply back ${c('x² + 4x')}; the remainder is ${c('3')}. The quotient is ${c('x')}, so the slant asymptote is ${c('y = x')}.`,
+   `Dividing the original function gives the same line, but simplifying first is easier.`],
+  fin:{Holes:'(2, 5/2)',Vertical:'x = −4',Horizontal:'none',Slant:'y = x'}},
+ {id:10,lv:3,text:'Build a function',ask:'Write a rational function with vertical asymptotes at x = 2 and x = −1, a horizontal asymptote at y = 3, a hole at x = 4, and x-intercepts at x = −5 and x = 1.',
+  expr:'3(x-4)(x+5)(x-1)/((x-4)(x-2)(x+1))',graphInAnswer:true,
+  steps:[
+   `<b>Hole at ${c('x = 4')}.</b> Put the factor ${c('(x − 4)')} in both the top and the bottom.`,
+   `<b>Vertical asymptotes at 2 and −1.</b> The bottom also gets ${c('(x − 2)(x + 1)')}.`,
+   `<b>x-intercepts at −5 and 1.</b> The top also gets ${c('(x + 5)(x − 1)')}.`,
+   `<b>Assemble.</b> The top has degree 3 and so does the bottom.`,
+   `<b>Horizontal asymptote ${c('y = 3')}.</b> The degrees match, so multiply the top by 3 to make the leading coefficient ratio ${c('3/1')}.`,
+   `One answer is below. Others work too, such as the same function written in expanded form.`],
+  fin:{Function:'f(x) = 3(x − 4)(x + 5)(x − 1) / [(x − 4)(x − 2)(x + 1)]',Hole:'(4, 81/10)'}},
+ {id:11,lv:3,text:'f(x) = (x² + kx + 6) / (x² − 9)',ask:'Find k so that f has a hole at x = 3. Then give the hole’s coordinates and all asymptotes.',
+  expr:'(x^2-5x+6)/(x^2-9)',graphInAnswer:true,
+  steps:[
+   `<b>Find k.</b> A hole at ${c('x = 3')} means ${c('(x − 3)')} divides the top. Set the top to 0 at ${c('x = 3')}: ${c('9 + 3k + 6 = 0')}, so ${c('3k = −15')} and ${c('k = −5')}.`,
+   `<b>Factor with k = −5.</b> The top is ${c('x² − 5x + 6 = (x − 2)(x − 3)')} and the bottom is ${c('(x − 3)(x + 3)')}.`,
+   `<b>Cancel</b> ${c('(x − 3)')}. The simplified function is ${c('(x − 2)/(x + 3)')}.`,
+   `<b>Hole.</b> ${c('x = 3')}. Put it in: ${c('(3 − 2)/(3 + 3) = 1/6')}. The hole is at ${c('(3, 1/6)')}.`,
+   `<b>Vertical asymptote.</b> ${c('x + 3 = 0')} gives ${c('x = −3')}.`,
+   `<b>Horizontal asymptote.</b> Both degrees are 2 and the leading coefficients are ${c('1/1')}, so ${c('y = 1')}.`],
+  fin:{k:'−5',Holes:'(3, 1/6)',Vertical:'x = −3',Horizontal:'y = 1'}}
+];
+
+function renderProblems(){
+  let html='';
+  for(const L of LEVELS){
+    html+=`<div class="level"><h3>Level ${L.n}: ${L.name}</h3><span class="dots" aria-hidden="true">${L.dots}</span></div>`;
+    for(const p of PROBLEMS.filter(q=>q.lv===L.n)){
+      const g=`<button type="button" class="btn small primary try" data-expr="${p.expr}">${p.graphInAnswer?'Graph the answer':'Graph it'}</button>`;
+      const fin=Object.entries(p.fin).map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+      html+=`<article class="prob" id="p${p.id}">
+        <span class="num">${p.id}.</span>
+        <div>
+          <div class="stmt"><span class="fn">${p.text}</span>${p.graphInAnswer?'':g}</div>
+          ${p.ask?`<p class="ask">${p.ask}</p>`:''}
+          <details><summary>Show answer</summary>
+            <div class="ans">
+              <ol>${p.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+              <dl class="final">${fin}</dl>
+              ${p.graphInAnswer?`<div>${g}</div>`:''}
+            </div>
+          </details>
+        </div>
+      </article>`;
+    }
+  }
+  $('problems').innerHTML=html;
+}
+renderProblems();
+$('openAll').addEventListener('click',()=>document.querySelectorAll('#problems details').forEach(d=>d.open=true));
+$('closeAll').addEventListener('click',()=>document.querySelectorAll('#problems details').forEach(d=>d.open=false));
+
+/* ---------- Start ---------- */
+applyExpr($('fx').value);
+updateReg();
+</script>
+
+</body></html>

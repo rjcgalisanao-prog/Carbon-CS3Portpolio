@@ -1,0 +1,3 @@
+# 1. All the methods are common in all classes
+# 2. All the methods are common in all classes because they share the same method names and signatures, allowing them to be called in a uniform way regardless of the specific class of the object. This is a key aspect of polymorphism, where different classes can implement the same interface or method, enabling code to be written that can operate on objects of different types.
+# 3. For example, a "use" method might heal a character when called on a health potion, but deal damage when called on a bomb.
